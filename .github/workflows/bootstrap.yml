@@ -1,0 +1,185 @@
+
+name: INDUSTRIA AI - Project Bootstrap
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-project:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate project structure
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          files = {
+              "frontend/index.html": """<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>INDUSTRIA AI</title>
+            <link rel="stylesheet" href="css/style.css">
+          </head>
+          <body>
+            <main>
+              <h1>INDUSTRIA AI</h1>
+              <p>From Industrial Data to Trusted AI.</p>
+            </main>
+            <script src="js/app.js"></script>
+          </body>
+          </html>
+          """,
+
+              "frontend/css/style.css": """* {
+            box-sizing: border-box;
+          }
+          body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: #ffffff;
+          }
+          main {
+            max-width: 1100px;
+            margin: 100px auto;
+            padding: 30px;
+            text-align: center;
+          }
+          h1 {
+            font-size: 42px;
+          }
+          """,
+
+              "frontend/js/app.js": """console.log("INDUSTRIA AI initialized");""",
+
+              "backend/app/__init__.py": "",
+
+              "backend/app/main.py": """from fastapi import FastAPI
+
+          app = FastAPI(
+              title="INDUSTRIA AI",
+              description="Universal Industrial Data Annotation Platform",
+              version="0.1.0"
+          )
+
+          @app.get("/")
+          def root():
+              return {
+                  "name": "INDUSTRIA AI",
+                  "status": "running",
+                  "version": "0.1.0"
+              }
+
+          @app.get("/health")
+          def health():
+              return {"status": "healthy"}
+          """,
+
+              "backend/requirements.txt": """fastapi
+          uvicorn[standard]
+          pytest
+          httpx
+          """,
+
+              "backend/app/core/README.md": "# Core configuration and security\n",
+
+              "backend/app/api/README.md": "# API routes\n",
+
+              "backend/app/models/README.md": "# Database models\n",
+
+              "backend/app/schemas/README.md": "# Data validation schemas\n",
+
+              "backend/app/services/README.md": "# Application services\n",
+
+              "backend/app/database/README.md": "# Database connection and configuration\n",
+
+              "backend/app/adapters/README.md": "# Industrial domain adapters\n",
+
+              "docs/architecture/README.md": "# INDUSTRIA AI Architecture\n",
+
+              "docs/user-guides/README.md": "# User Guides\n",
+
+              "tests/test_health.py": """from fastapi.testclient import TestClient
+          from backend.app.main import app
+
+          client = TestClient(app)
+
+          def test_health():
+              response = client.get("/health")
+              assert response.status_code == 200
+              assert response.json()["status"] == "healthy"
+          """,
+
+              "examples/README.md": "# Example industrial datasets\n",
+
+              "scripts/README.md": "# Automation and maintenance scripts\n",
+
+              "backend/__init__.py": "",
+
+              ".gitignore": """__pycache__/
+          *.py[cod]
+          .venv/
+          venv/
+          .env
+          .pytest_cache/
+          .coverage
+          storage/uploads/*
+          storage/exports/*
+          !storage/uploads/.gitkeep
+          !storage/exports/.gitkeep
+          """,
+
+              "storage/uploads/.gitkeep": "",
+              "storage/exports/.gitkeep": ""
+          }
+
+          for filename, content in files.items():
+              path = Path(filename)
+              path.parent.mkdir(parents=True, exist_ok=True)
+
+              if not path.exists():
+                  path.write_text(content, encoding="utf-8")
+                  print("Created:", filename)
+              else:
+                  print("Preserved existing file:", filename)
+
+          readme = Path("README.md")
+
+          if not readme.exists():
+              readme.write_text(
+                  "# INDUSTRIA AI\n\n"
+                  "Universal Industrial Data Annotation "
+                  "& Quality Intelligence Platform.\n\n"
+                  "From Industrial Data to Trusted AI.\n\n"
+                  "Status: Early development.\n",
+                  encoding="utf-8"
+              )
+
+          print("INDUSTRIA AI project generation completed.")
+          PY
+
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No new files to commit."
+          else
+            git commit -m "Generate INDUSTRIA AI project structure"
+            git push
+          fi
